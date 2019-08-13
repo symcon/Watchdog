@@ -10,6 +10,7 @@ class Watchdog extends IPSModule
 		$this->RegisterPropertyInteger("TimeBase", 0);
 		$this->RegisterPropertyInteger("TimeValue", 60);
 		$this->RegisterPropertyInteger("CheckTargetsInterval", 60);
+		$this->RegisterPropertyString("Targets", "[]");
 		
 		//Timer
 		$this->RegisterTimer("CheckTargetsTimer", 0, 'WD_CheckTargets($_IPS[\'TARGET\']);');
@@ -20,8 +21,6 @@ class Watchdog extends IPSModule
 		$this->RegisterVariableBoolean("Alert", "Alarm", "~Alert");
 		$this->RegisterVariableBoolean("Active", "Watchdog aktiv", "~Switch");
 		$this->EnableAction("Active");
-		
-		$this->CreateCategoryByIdent($this->InstanceID, "Targets", "Targets (Watchdog)");
 		
 	}
 
@@ -35,6 +34,33 @@ class Watchdog extends IPSModule
 		//Never delete this line!
 		parent::ApplyChanges();
 		
+		//Links to list
+		if ($this->ReadPropertyString("Targets") == "[]") {
+            $TargetID = @$this->GetIDForIdent("Targets");
+
+            if ($TargetID) {
+                $Variables = [];
+                foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
+                    $targetID = IPS_GetLink($ChildrenID)["TargetID"];
+                    $line = [
+                        "VariableID" => $targetID
+                    ];
+                    array_push($Variables, $line);
+                    IPS_DeleteLink($ChildrenID);
+                }
+
+                IPS_DeleteCategory($TargetID);
+                IPS_SetProperty($this->InstanceID, "Targets", json_encode($Variables));
+                IPS_ApplyChanges($this->InstanceID);
+                return;
+            }
+        }
+
+		foreach ($this->ReadPropertyString("Targets") as $target) {
+			RegisterMessage($target["VariableID"], VM_UPDATE);
+		}
+
+
 		if (GetValue($this->GetIDForIdent("Active"))) {
 			$this->SetTimerInterval("CheckTargetsTimer", $this->ReadPropertyInteger("CheckTargetsInterval") * 1000);
 		}
@@ -81,40 +107,34 @@ class Watchdog extends IPSModule
 
 	public function GetAlertTargets() {
 		
-		$targetIDs = $this->GetTargets();
+		$targets = $this->GetTargets();
 		
 		$watchTime = $this->GetWatchTime();
 		$watchTimeBorder = time() - $watchTime;
 		
-		$alertTargets = array();
+		$alertTargets = [];
 		
-		foreach ($targetIDs as $targetID){
-			
-			//resolve link to linked targetID
-			$linkedTargetID = IPS_GetLink($targetID)['TargetID'];
-			
-			$v = IPS_GetVariable($linkedTargetID);
+		foreach ($targets as $target){
+									
+			$v = IPS_GetVariable($target["VariableID"]);
 			
 			if($v['VariableUpdated'] < $watchTimeBorder){
-				$alertTargets[] = array('LinkID' => $targetID, 'VariableID' => $linkedTargetID, 'LastUpdate' => $v['VariableUpdated']);
+				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
 			}
 		}
 		return $alertTargets;
 		
 	}
 
-	//Returns all "real" variableID's as array, which are linked in the "Targets" category
+	//Returns all variableID's and optional names of targets as array, which are listed in "Targets"
 	private function GetTargets() {
 		
-		$targetIDs = IPS_GetChildrenIDs(IPS_GetObjectIDByIdent("Targets", $this->InstanceID));
+		$targets = json_decode($this->ReadPropertyString("Targets"), true);
 		
-		$result = array();
-		foreach($targetIDs as $targetID) {
-			//Only allow links
-			if (IPS_LinkExists($targetID)) {
-				if (IPS_VariableExists(IPS_GetLink($targetID)['TargetID'])) {
-					$result[] = $targetID;
-				}
+		$result = [];
+		foreach($targets as $target) {
+			if (IPS_VariableExists($target["VariableID"])) {
+				$result[] = $target;
 			}
 		}
 		return $result;
@@ -152,9 +172,10 @@ class Watchdog extends IPSModule
 		
 		foreach ($AlertTargets as $alertTarget) {
 			
-			$name = IPS_GetName($alertTarget['LinkID']);
-			if(IPS_GetName($alertTarget['VariableID']) == $name) {
-				$name = IPS_GetName(IPS_GetParent($alertTarget['VariableID']))."\\".IPS_GetName($alertTarget['VariableID']);
+			if ($alertTarget["Name"] == "") {
+				$name = IPS_GetLocation($alertTarget["VariableID"]);
+			} else {
+                $name = $alertTarget["Name"];
 			}
 			
 			$timediff = time() - $alertTarget['LastUpdate'];
@@ -171,17 +192,5 @@ class Watchdog extends IPSModule
 		SetValue($this->GetIDForIdent("AlertView"), $html);
 		
 	}
-
-	private function CreateCategoryByIdent($id, $ident, $name) {
-		$cid = @IPS_GetObjectIDByIdent($ident, $id);
-		if($cid === false) {
-			$cid = IPS_CreateCategory();
-			IPS_SetParent($cid, $id);
-			IPS_SetName($cid, $name);
-			IPS_SetIdent($cid, $ident);
-		}
-		return $cid;
-	}
-
 }
 ?>

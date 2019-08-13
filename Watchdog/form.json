@@ -1,6 +1,34 @@
 {
   "elements":
   [
+	{
+		"type": "List",
+		"name": "Targets",
+		"caption": "Variables",
+		"add": true,
+		"delete": true,
+		"columns": [
+		  {
+			"caption": "Variable",
+			"name": "VariableID",
+			"width": "auto",
+			"add": 0,
+			"edit": {
+			  "type": "SelectVariable"
+			}
+		  },
+		  {
+			"caption": "Name (optional)",
+			"name": "Name",
+			"width": "200px",
+			"add": "",
+			"value": "",
+			"edit": {
+			  "type": "ValidationTextBox"
+			}
+		  }
+		]
+	  },
 	{ "type": "Label", "label": "Time until not updatet objects will set off an alert. Its added to the last time an object is updatet." },
 	{ "type": "Select", "name": "TimeBase", "caption": "Time base",
 		"options": [
