@@ -38,7 +38,8 @@
 			{ "label": "Days", "value": 3 }
 		]
 	},
-	{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time value" }
+	{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time value" },
+	{"type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages during the start process"}
   ],
   "actions": [
 	  {

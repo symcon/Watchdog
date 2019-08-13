@@ -10,6 +10,7 @@ class Watchdog extends IPSModule
 		$this->RegisterPropertyInteger("TimeBase", 0);
 		$this->RegisterPropertyInteger("TimeValue", 60);
 		$this->RegisterPropertyString("Targets", "[]");
+		$this->RegisterPropertyBoolean("BlockAlarm", false);
 		
 		//Timer
 		$this->RegisterTimer("CheckTargetsTimer", 0, 'WD_CheckTargets($_IPS[\'TARGET\']);');
@@ -58,14 +59,18 @@ class Watchdog extends IPSModule
             }
         }
 
-		foreach ($this->ReadPropertyString("Targets") as $target) {
-			RegisterMessage($target["VariableID"], VM_UPDATE);
+		foreach (json_decode($this->ReadPropertyString("Targets"), true) as $target) {
+			$this->RegisterMessage($target["VariableID"], VM_UPDATE);
 		}
-
-
-		if (GetValue($this->GetIDForIdent("Active"))) {
+		//Additional condition: "No alarm on start" must be active
+		if ((IPS_GetKernelRunlevel() == KR_CREATE) && $this->ReadPropertyBoolean("BlockAlarm")) {
+			$this->SetBuffer("Ready", "false");
+			$this->RegisterMessage(0, KR_READY);
+		}
+		else if (GetValue($this->GetIDForIdent("Active"))) {
 			$this->UpdateTimer();
 		}
+		
 	}
 
 	public function RequestAction($Ident, $Value) {
@@ -96,7 +101,7 @@ class Watchdog extends IPSModule
 	}
 
 	public function CheckTargets() {
-		
+		$this->SetBuffer("Ready", "true");
 		$alertTargets = $this->GetAlertTargets();
 		SetValue($this->GetIDForIdent("Alert"), sizeof($alertTargets) > 0);
 		
@@ -104,6 +109,7 @@ class Watchdog extends IPSModule
 		
 		$this->UpdateView($alertTargets);
 		
+		$this->UpdateTimer();
 	}
 
 	public function GetAlertTargets() {
@@ -164,6 +170,10 @@ class Watchdog extends IPSModule
 
 	public function UpdateTimer() 
 	{
+		//Immediately return if off flag is set or instance is inactive
+		if (($this->GetBuffer("Ready") == "false") || GetValue($this->GetIDForIdent("Active"))) {
+			return;
+		}
 		SetValue($this->GetIDForIdent("LastCheck"), time());
 		$targets = $this->GetTargets();
 		$updated = time();
@@ -184,8 +194,17 @@ class Watchdog extends IPSModule
 
 	public function MessageSink ($TimeStamp, $SenderID, $MessageID, $Data)
 	{
-		$this->UpdateTimer();	
+		switch($MessageID) {
+			case VM_UPDATE:
+				$this->UpdateTimer();
+				break;
+
+			case KR_READY:
+				$this->SetTimerInterval("CheckTargetsInterval", $this->GetWatchTime());
+				break;
+		}	
 	}
+		
 
 	private function UpdateView($AlertTargets) {
 		
