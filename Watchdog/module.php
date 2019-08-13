@@ -9,7 +9,6 @@ class Watchdog extends IPSModule
 		//Properties
 		$this->RegisterPropertyInteger("TimeBase", 0);
 		$this->RegisterPropertyInteger("TimeValue", 60);
-		$this->RegisterPropertyInteger("CheckTargetsInterval", 60);
 		$this->RegisterPropertyString("Targets", "[]");
 		
 		//Timer
@@ -21,6 +20,9 @@ class Watchdog extends IPSModule
 		$this->RegisterVariableBoolean("Alert", "Alarm", "~Alert");
 		$this->RegisterVariableBoolean("Active", "Watchdog aktiv", "~Switch");
 		$this->EnableAction("Active");
+
+		//Attribute
+		$this->RegisterAttributeInteger("TimerInterval", 10);
 		
 	}
 
@@ -62,7 +64,7 @@ class Watchdog extends IPSModule
 
 
 		if (GetValue($this->GetIDForIdent("Active"))) {
-			$this->SetTimerInterval("CheckTargetsTimer", $this->ReadPropertyInteger("CheckTargetsInterval") * 1000);
+			$this->UpdateTimer();
 		}
 	}
 
@@ -75,7 +77,6 @@ class Watchdog extends IPSModule
 			default:
 				throw new Exception("Invalid ident");
 		}
-		
 	}
 
 	public function SetActive(bool $SwitchOn){
@@ -83,7 +84,7 @@ class Watchdog extends IPSModule
 		if ($SwitchOn){
 			//When activating the simulation, fetch actual data for a day and activate timer for updating targets
 			$this->CheckTargets();
-			$this->SetTimerInterval("CheckTargetsTimer", $this->ReadPropertyInteger("CheckTargetsInterval") * 1000);
+			$this->UpdateTimer();
 		} else {
 			//When deactivating the simulation, kill data for simulation and deactivate timer for updating targets
 			$this->SetTimerInterval("CheckTargetsTimer", 0);
@@ -159,6 +160,31 @@ class Watchdog extends IPSModule
 				return $timeValue * 86400;
 		}
 		
+	}
+
+	public function UpdateTimer() 
+	{
+		SetValue($this->GetIDForIdent("LastCheck"), time());
+		$targets = $this->GetTargets();
+		$updated = time();
+		foreach ($targets as $target) {
+			$targetUpdated = IPS_GetVariable($target["VariableID"])["VariableUpdated"];
+			if ($targetUpdated < $updated) {
+				$updated = $targetUpdated;
+			}
+		} 
+		$updatedInterval = $this->ReadPropertyInteger("TimeValue") - time() + $updated;
+        if ($updatedInterval > 0) {
+            $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval);
+        } else {
+            $this->SetTimerInterval("CheckTargetsTimer", 0);
+			$this->CheckTargets();
+		}
+	}
+
+	public function MessageSink ($TimeStamp, $SenderID, $MessageID, $Data)
+	{
+		$this->UpdateTimer();	
 	}
 
 	private function UpdateView($AlertTargets) {
