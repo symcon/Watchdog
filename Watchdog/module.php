@@ -183,7 +183,7 @@ class Watchdog extends IPSModule
 				$updated = $targetUpdated;
 			}
 		} 
-		$updatedInterval = $this->ReadPropertyInteger("TimeValue") - time() + $updated;
+		$updatedInterval = $this->GetWatchTime() - time() + $updated;
         if ($updatedInterval > 0) {
             $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval);
         } else {
