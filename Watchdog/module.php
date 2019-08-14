@@ -196,7 +196,12 @@ class Watchdog extends IPSModule
 	{
 		switch($MessageID) {
 			case VM_UPDATE:
-				$this->UpdateTimer();
+				//If in alarm state not only timer update
+				if (GetValue($this->GetIDForIdent("Alert"))) {
+					$this->CheckTargets();
+				} else {
+                    $this->UpdateTimer();
+                }
 				break;
 
 			case KR_READY:
