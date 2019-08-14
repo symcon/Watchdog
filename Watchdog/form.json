@@ -29,18 +29,30 @@
 		  }
 		]
 	  },
-	{ "type": "Label", "label": "Time until not updatet objects will set off an alert. Its added to the last time an object is updatet." },
-	{ "type": "Select", "name": "TimeBase", "caption": "Time base",
-		"options": [
-			{ "label": "Seconds", "value": 0 },
-			{ "label": "Minutes", "value": 1 },
-			{ "label": "Hours", "value": 2 },
-			{ "label": "Days", "value": 3 }
+	{ "type": "Label", "label": "Time until a variable is considered inactive." },
+	{
+		"type": "RowLayout", 
+		"items": [
+			{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time" },
+			{ "type": "Select", "name": "TimeBase", "caption": "Unit",
+				"options": [
+					{ "label": "Seconds", "value": 0 },
+					{ "label": "Minutes", "value": 1 },
+					{ "label": "Hours", "value": 2 },
+					{ "label": "Days", "value": 3 }
+				]
+	}
+
 		]
 	},
-	{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time value" },
-	{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages during the start process" },
-	{ "type": "CheckBox", "name": "CheckChange", "caption": "Checks for changes instead of updates" }
+	{
+		"type": "ExpansionPanel", 
+		"caption": "Advanced Settings",
+		"items": [
+			{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages during the start process" },
+			{ "type": "CheckBox", "name": "CheckChange", "caption": "Checks for changes instead of updates" }
+		]
+	}
   ],
   "actions": [
 	  {

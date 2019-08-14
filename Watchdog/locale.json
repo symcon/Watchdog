@@ -1,14 +1,13 @@
 {
 	"translations": {
 		"de": { 
-			"Time until not updatet objects will set off an alert. Its added to the last time an object is updatet.": "Zeit bis ein Objekt überfällig ist und den Alarm aktiviert. Die Zeit wird auf den Zeitpunkt der letzten Aktivität der verlinkten Objekte addiert.",
-			"Time base": "Zeit Basis",
+			"Time until a variable is considered inactive.": "Zeit bis eine Variable als inaktiv angesehen wird.",
+			"Unit": "Einheit",
 			"Seconds": "Sekunden",
 			"Minutes": "Minuten",
 			"Hours": "Stunden",
 			"Days": "Tage",
-			"Time value": "Zeitwert",
-			"Interval which checks the linked objects": "Intervall in dem die verlinkten Objekte geprüft werden",
+			"Time": "Zeit",
 			"Suppress alarm messages during the start process": "Alarm-Meldungen während dem Startvorgang unterdrücken",
 			"Checks for changes instead of updates": "Prüft auf Änderungen anstelle von Updates",
 			"%d Minute": "%d Minute",
@@ -20,7 +19,8 @@
 			"Last change": "Letze Änderung",
 			"Last update": "Letzte Aktualisuerung",
 			"Actor": "Aktor",
-			"Overdue since": "Überfällig seit"
+			"Overdue since": "Überfällig seit",
+			"Advanced Settings": "Erweiterte Einstellungen"
 		}
 	}
 }
