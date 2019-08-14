@@ -1,5 +1,5 @@
 # Watchdog
-Checkt ob verlinkte Variablen überfällig sind.
+Checkt ob in einer Liste definierte Variablen überfällig sind.
 Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im WebFront angezeigt.
 
 
@@ -15,35 +15,38 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 
 ### 1. Funktionsumfang
 
-* Überwachen von verlinkten Variablen.
-* Einstellbarkeit wie lange die verlinkten überfällig sein dürfen.
+* Überwachen von gelisteten Variablen.
+* Einstellbarkeit ob die Variablen auf Änderung oder Aktuallisierung geprüft werden sollen.
+* Einstellbarkeit wie lange die gelisteten Variablen überfällig sein dürfen.
 * Ein-/Ausschaltbarkeit via WebFront-Button oder Skript-Funktion.
-* Anzeige wann die verlinkten Variablen zuletzt überprüft wurden.
-* Einstellbare automatische Überprüfung.
-* Darstellung des Originalpfades, wenn der Link den gleichen Namen hat wie die Ursprungsvariable. Ansonsten Anzeige des Linknamens
+* Anzeige wann die gelisteten Variablen zuletzt überprüft wurden.
+* Darstellung des Originalpfades oder eines inndividuellen Namens.
 
 ### 2. Voraussetzungen
 
-- IP-Symcon ab Version 4.x
+- IP-Symcon ab Version 5.0
 
 ### 3. Software-Installation
 
-Über das Modul-Control folgende URL hinzufügen.  
-`git://github.com/symcon/SymconMisc.git`  
+* Über den Modul Store das Modul RGB-Multiplexer installieren.
+* Alternativ über das Modul Control folgende URL hinzufügen:
+`https://github.com/symcon/Watchdog`  
+ 
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
 - Unter "Instanz hinzufügen" ist das 'Watchdog'-Modul unter dem Hersteller '(Sonstige)' aufgeführt.  
-- Alle zu schaltenden Variablen müssen in der "Targets (Watchdog)"-Kategorie verlinkt werden.
+- Alle zu schaltenden Variablen müssen der Liste "Variablen" in der Instanzkonfiguration hintugefügt werden.
 
 __Konfigurationsseite__:
 
 Name       | Beschreibung
 ---------- | ---------------------------------
-Zeit Basis | Ob der Zweitwert als Sekunden/Minuten/Stunden/Tage interpretiert werden soll.
-Zeitwert   | Zeitwert bei dem, bei Überfälligkeit einer verlinkten Variable, der Alarm ausgelöst werden soll.
-Intervall  | Intervall bei dem die verlinkten Veriablen überprüft werden sollen.
+Variablen  | Eine Liste,der die zu beobachteten Variablen hinzugefügt werden.
+Zeit       | Dauer der Inaktivität bis die gelisteten Variablen den Alarm auslösen. 
+Einheit    | Einheit der Zeit.
 
+Sollten Variablen unterschiedlich oft geprüft werden, ist es zu empfehlen meherer Instanzen des Watchdog-Moduls zu verwenden.
 
 ### 5. Statusvariablen und Profile
 
@@ -51,12 +54,11 @@ Die Statusvariablen/Kategorien werden automatisch angelegt. Das Löschen einzeln
 
 Name               | Typ       | Beschreibung
 ------------------ | --------- | ----------------
-Targets (Watchdog) | Kategorie | Beinhaltet alle verlinkten Variablen, welche bei der Überprüfung beachtet werden sollen. (Nur Links erlaubt)
 Aktive Alarme      | String    | Beinhaltet die Tabelle für die Darstellung im WebFront.
 Alarm              | Boolean   | Die Variable zeigt an ob ein Alarm vorhanden ist. True = Alarm; False = OK;
 Letzte Überprüfung | Integer   | UnixTimestamp der den Zeitpunkt angibt zu dem zuletzt überprüft wurde.
-Watchdog aktiv     | Timer     | Zeigt an ob der Watchdog aktiviert ist oder nicht. True = Aktiviert; False = Deaktiviert;
-UpdateTargetTimer  | Timer     | Automatische Überprüfung im eingestellten Intervall.
+Watchdog aktiv     | Boolean   | Zeigt an ob der Watchdog aktiviert ist oder nicht. True = Aktiviert; False = Deaktiviert;
+CheckTargetsTimer  | Timer     | Automatische Überprüfung im eingestellten Intervall.
 
 Es werden keine zusätzlichen Profile benötigt.
 
@@ -74,9 +76,9 @@ Die Funktion liefert keinerlei Rückgabewert.
 Beispiel:  
 `WD_SetActive(12345, true);`
 
-`array WD_GetAlertTargets(integer $InstanzID, boolean $SetActive);`  
+`array WD_GetAlertTargets(integer $InstanzID);`  
 Die Funktion liefert ein Array mit den aktiven Alarmen der Watchdoginstanz mit der InstanzID $InstanzID.  
-Die Funktion liefert ein Array mit überfälligen Objekten. Es beinhaltet die LinkID, VariablenID und den letzten Zeitpunkt (UnixTimestamp) des Updates.
+Die Funktion liefert ein Array mit überfälligen Objekten. Es beinhaltet den optionalen Namen, VariablenID und den letzten Zeitpunkt (UnixTimestamp) des Updates oder der Änderung.
 
 Beispiel:  
 `WD_GetAlertTargets(12345);`
