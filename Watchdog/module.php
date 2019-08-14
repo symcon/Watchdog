@@ -239,22 +239,22 @@ class Watchdog extends IPSModule
 		$number = 0;
 		if ($Value < 60) {
 			return($this->Translate("Just now"));
-		} elseif (($Value > 60) && ($Value < 60 * 60)) {
+		} elseif (($Value > 60) && ($Value < (60 * 60))) {
 			$template = "%d Minute";
-			$number = (int) ($Value / 60);
-			if ($Value >= 2 * 60) {
+			$number = floor($Value / 60);
+			if ($Value >= (2 * 60)) {
 				$template .= "s";
 			}
-		} elseif (($Value > 60 * 60) && ($Value < 24 * 60 * 60)) {
+		} elseif (($Value > (60 * 60)) && ($Value < (24 * 60 * 60))) {
 			$template = "%d Hour";
-			$number = (int) ($Value / 60 * 60);
-			if ($Value >= 2 * 60 * 60) {
+			$number =  floor($Value / (60 * 60));
+			if ($Value >= (2 * 60 * 60)) {
 				$template .= "s";
 			}
-		} elseif ($Value > 24 * 60 * 60) {
+		} elseif ($Value > (24 * 60 * 60)) {
 			$template = "%d Day";
-			$number = (int) ($Value / 24 * 60 * 60);
-			if ($Value >= 2  * 24 * 60 * 60) {
+			$number = floor($Value / (24 * 60 * 60));
+			if ($Value >= (2  * 24 * 60 * 60)) {
 				$template .= "s";
 			}
 		}
