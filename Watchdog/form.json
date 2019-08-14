@@ -39,7 +39,8 @@
 		]
 	},
 	{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time value" },
-	{"type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages during the start process"}
+	{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages during the start process" },
+	{ "type": "CheckBox", "name": "CheckChange", "caption": "Checks for changes instead of updates" }
   ],
   "actions": [
 	  {

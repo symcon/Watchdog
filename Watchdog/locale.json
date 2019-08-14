@@ -9,7 +9,18 @@
 			"Days": "Tage",
 			"Time value": "Zeitwert",
 			"Interval which checks the linked objects": "Intervall in dem die verlinkten Objekte geprüft werden",
-			"Suppress alarm messages during the start process": "Alarm-Meldungen während dem Startvorgang unterdrücken"
+			"Suppress alarm messages during the start process": "Alarm-Meldungen während dem Startvorgang unterdrücken",
+			"Checks for changes instead of updates": "Prüft auf Änderungen anstelle von Updates",
+			"%d Minute": "%d Minute",
+			"%d Minutes": "%d Minuten",
+			"%d Hour": "%d Stunde",
+			"%d Hours": "%d Stunden",
+			"%d Day": "%d Tag",
+			"%d Days": "%d Tage",
+			"Last change": "Letze Änderung",
+			"Last update": "Letzte Aktualisuerung",
+			"Actor": "Aktor",
+			"Overdue since": "Überfällig seit"
 		}
 	}
 }

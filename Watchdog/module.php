@@ -11,9 +11,10 @@ class Watchdog extends IPSModule
 		$this->RegisterPropertyInteger("TimeValue", 60);
 		$this->RegisterPropertyString("Targets", "[]");
 		$this->RegisterPropertyBoolean("BlockAlarm", false);
-		
+		$this->RegisterPropertyBoolean("CheckChange", false);
+
 		//Timer
-		$this->RegisterTimer("CheckTargetsTimer", 0, 'WD_CheckTargets($_IPS[\'TARGET\']);');
+		$this->RegisterTimer("CheckTargetsTimer", 0, 'WD_UpdateTimer($_IPS[\'TARGET\'], true);');
 		
 		//Variables
 		$this->RegisterVariableInteger("LastCheck", "Letzte Überprüfung", "~UnixTimestamp");
@@ -68,7 +69,7 @@ class Watchdog extends IPSModule
 			$this->RegisterMessage(0, KR_READY);
 		}
 		else if (GetValue($this->GetIDForIdent("Active"))) {
-			$this->UpdateTimer();
+			$this->UpdateTimer(false);
 		}
 		
 	}
@@ -88,8 +89,9 @@ class Watchdog extends IPSModule
 		
 		if ($SwitchOn){
 			//When activating the simulation, fetch actual data for a day and activate timer for updating targets
-			$this->CheckTargets();
-			$this->UpdateTimer();
+			$this->UpdateTimer(true);
+			$this->SendDebug("ModuleActive", "working", 0);
+			$this->SendDebug("ModuleActive", "TimerUpdated", 0);
 		} else {
 			//When deactivating the simulation, kill data for simulation and deactivate timer for updating targets
 			$this->SetTimerInterval("CheckTargetsTimer", 0);
@@ -108,8 +110,8 @@ class Watchdog extends IPSModule
 		SetValue($this->GetIDForIdent("LastCheck"), time());
 		
 		$this->UpdateView($alertTargets);
+		$this->SendDebug("CheckTargets", "TargetChecked", 0);
 		
-		$this->UpdateTimer();
 	}
 
 	public function GetAlertTargets() {
@@ -125,8 +127,14 @@ class Watchdog extends IPSModule
 									
 			$v = IPS_GetVariable($target["VariableID"]);
 			
-			if($v['VariableUpdated'] < $watchTimeBorder){
-				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
+			if($this->ReadPropertyBoolean("CheckChange")) {
+				if($v['VariableChanged'] < $watchTimeBorder){
+					$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableChanged']);
+				}
+			} else {
+				if($v['VariableUpdated'] < $watchTimeBorder){
+					$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
+				}
 			}
 		}
 		return $alertTargets;
@@ -168,26 +176,40 @@ class Watchdog extends IPSModule
 		
 	}
 
-	public function UpdateTimer() 
+	public function UpdateTimer($Force) 
 	{
+		if($Force) {
+			$this->SetBuffer("Ready", "true");
+		}
+
 		//Immediately return if off flag is set or instance is inactive
-		if (($this->GetBuffer("Ready") == "false") || GetValue($this->GetIDForIdent("Active"))) {
+		$this->SendDebug("MessageSink", "TimerUpdated", 0);
+		if (($this->GetBuffer("Ready") == "false") || !(GetValue($this->GetIDForIdent("Active")))) {
+			$this->SendDebug("UpdateTimer", "NotReady or NotActive", 0);
 			return;
 		}
 		SetValue($this->GetIDForIdent("LastCheck"), time());
 		$targets = $this->GetTargets();
 		$updated = time();
 		foreach ($targets as $target) {
-			$targetUpdated = IPS_GetVariable($target["VariableID"])["VariableUpdated"];
+            if ($this->ReadPropertyBoolean("CheckChange")) {
+                $targetUpdated = IPS_GetVariable($target["VariableID"])["VariableUpdated"];
+            } else {
+				$targetUpdated = IPS_GetVariable($target["VariableID"])["VariableChanged"];
+			}
 			if ($targetUpdated < $updated) {
+				$this->SendDebug("UpdateTimer", "targetupdated: " . $targetUpdated, 0);
+				$this->SendDebug("UpdateTimer", "updated: " . $updated, 0);
 				$updated = $targetUpdated;
 			}
 		} 
 		$updatedInterval = $this->GetWatchTime() - time() + $updated;
         if ($updatedInterval > 0) {
-            $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval);
+			$this->SendDebug("Timer", "TimerInterval: " . $updatedInterval, 0);
+            $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval * 1000);
         } else {
-            $this->SetTimerInterval("CheckTargetsTimer", 0);
+			$this->SetTimerInterval("CheckTargetsTimer", 60 * 1000);
+			$this->SendDebug("Timer", "TimerInterval: " . $updatedInterval, 60 * 1000);
 			$this->CheckTargets();
 		}
 	}
@@ -199,8 +221,9 @@ class Watchdog extends IPSModule
 				//If in alarm state not only timer update
 				if (GetValue($this->GetIDForIdent("Alert"))) {
 					$this->CheckTargets();
+					$this->UpdateTimer(false);
 				} else {
-                    $this->UpdateTimer();
+                    $this->UpdateTimer(false);
                 }
 				break;
 
@@ -209,15 +232,51 @@ class Watchdog extends IPSModule
 				break;
 		}	
 	}
-		
+	
+	public function FormatTime($Value)
+	{
+		$template = "";
+		$number = 0;
+		if ($Value < 60) {
+			return($this->Translate("Just now"));
+		} elseif (($Value > 60) && ($Value < 60 * 60)) {
+			$template = "%d Minute";
+			$number = (int) ($Value / 60);
+			if ($Value >= 2 * 60) {
+				$template .= "s";
+			}
+		} elseif (($Value > 60 * 60) && ($Value < 24 * 60 * 60)) {
+			$template = "%d Hour";
+			$number = (int) ($Value / 60 * 60);
+			if ($Value >= 2 * 60 * 60) {
+				$template .= "s";
+			}
+		} elseif ($Value > 24 * 60 * 60) {
+			$template = "%d Day";
+			$number = (int) ($Value / 24 * 60 * 60);
+			if ($Value >= 2  * 24 * 60 * 60) {
+				$template .= "s";
+			}
+		}
+
+		return sprintf($this->Translate($template), $number);
+	}
+	
+
 
 	private function UpdateView($AlertTargets) {
 		
+		if ($this->ReadPropertyBoolean("CheckChange")) {
+			$last = $this->Translate("Last change");
+		} else {
+			$last = $this->Translate("Last update");
+		}
+
 		$html = "<table style='width: 100%; border-collapse: collapse;'>";
 		$html .= "<tr>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Aktor</td>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Letzte Aktualisierung</td>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Überfällig seit</td>";
+		$html .= "<td style='padding: 5px; font-weight: bold;'>".$this->Translate("Actor")."</td>";
+		$html .= "<td style='padding: 5px; font-weight: bold;'>".$last."</td>";
+		$html .= "<td style='padding: 5px; font-weight: bold;'>".$this->Translate("Overdue since")."</td>";
 		$html .= "</tr>";
 		
 		foreach ($AlertTargets as $alertTarget) {
@@ -229,12 +288,12 @@ class Watchdog extends IPSModule
 			}
 			
 			$timediff = time() - $alertTarget['LastUpdate'];
-			$timestring = sprintf("%02d:%02d:%02d", (int)($timediff / 3600) , (int)($timediff / 60) % 60, ($timediff) % 60);
-			
+			$timestring = $this->FormatTime($timediff);
+
 			$html .= "<tr style='border-top: 1px solid rgba(255,255,255,0.10);'>";
 			$html .= "<td style='padding: 5px;'>".$name."</td>";
 			$html .= "<td style='padding: 5px;'>".date("d.m.Y H:i:s", $alertTarget['LastUpdate'])."</td>";
-			$html .= "<td style='padding: 5px;'>".$timestring." Stunden</td>";
+			$html .= "<td style='padding: 5px;'>".$timestring."</td>";
 			$html .= "</tr>";
 		}
 		$html .= "</table>";
