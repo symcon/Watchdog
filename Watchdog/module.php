@@ -102,7 +102,7 @@ class Watchdog extends IPSModule
 		
 	}
 
-	public function CheckTargets() {
+	private function CheckTargets() {
 		$this->SetBuffer("Ready", "true");
 		$alertTargets = $this->GetAlertTargets();
 		SetValue($this->GetIDForIdent("Alert"), sizeof($alertTargets) > 0);
@@ -233,7 +233,7 @@ class Watchdog extends IPSModule
 		}	
 	}
 	
-	public function FormatTime($Value)
+	private function FormatTime($Value)
 	{
 		$template = "";
 		$number = 0;
