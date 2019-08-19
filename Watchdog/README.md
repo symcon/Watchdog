@@ -28,10 +28,9 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 
 ### 3. Software-Installation
 
-* Über den Modul Store das Modul RGB-Multiplexer installieren.
+* Über den Modul Store das Modul Watchdog installieren.
 * Alternativ über das Modul Control folgende URL hinzufügen:
-´https://github.com/symcon/Watchdog`  
- 
+`https://github.com/symcon/Watchdog`
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
