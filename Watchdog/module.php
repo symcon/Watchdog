@@ -120,21 +120,16 @@ class Watchdog extends IPSModule
 		
 		$watchTime = $this->GetWatchTime();
 		$watchTimeBorder = time() - $watchTime;
-		
 		$alertTargets = [];
 		
 		foreach ($targets as $target){
 									
 			$v = IPS_GetVariable($target["VariableID"]);
-			
-			if($this->ReadPropertyBoolean("CheckChange")) {
-				if($v['VariableChanged'] < $watchTimeBorder){
-					$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableChanged']);
-				}
-			} else {
-				if($v['VariableUpdated'] < $watchTimeBorder){
-					$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
-				}
+
+			if(($v['VariableChanged'] < $watchTimeBorder) && $this->ReadPropertyBoolean("CheckChange")){
+				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableChanged']);
+			} elseif ($v['VariableUpdated'] < $watchTimeBorder) {
+				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
 			}
 		}
 		return $alertTargets;
@@ -205,11 +200,9 @@ class Watchdog extends IPSModule
 		} 
 		$updatedInterval = $this->GetWatchTime() - time() + $updated;
         if ($updatedInterval > 0) {
-			$this->SendDebug("Timer", "TimerInterval: " . $updatedInterval, 0);
             $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval * 1000);
         } else {
 			$this->SetTimerInterval("CheckTargetsTimer", 60 * 1000);
-			$this->SendDebug("Timer", "TimerInterval: " . $updatedInterval, 60 * 1000);
 			$this->CheckTargets();
 		}
 	}
@@ -262,10 +255,10 @@ class Watchdog extends IPSModule
 		return sprintf($this->Translate($template), $number);
 	}
 	
-
-
 	private function UpdateView($AlertTargets) {
 		
+		$last = "";
+
 		if ($this->ReadPropertyBoolean("CheckChange")) {
 			$last = $this->Translate("Last change");
 		} else {
