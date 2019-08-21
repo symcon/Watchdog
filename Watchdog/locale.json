@@ -8,7 +8,7 @@
 			"Hours": "Stunden",
 			"Days": "Tage",
 			"Time": "Zeit",
-			"Suppress alarm messages during the start process": "Alarm-Meldungen während dem Startvorgang unterdrücken",
+			"Suppress alarm messages while IP-Symcon is starting": "Alarm-Meldungen während IP-Symcon startet unterdrücken",
 			"Checks for changes instead of updates": "Prüft auf Änderungen anstelle von Updates",
 			"%d Minute": "%d Minute",
 			"%d Minutes": "%d Minuten",
