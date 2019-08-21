@@ -1,5 +1,5 @@
 # Watchdog
-Checkt ob in einer Liste definierte Variablen überfällig sind.
+Überprüft ob in einer Liste definierte Variablen überfällig sind.
 Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im WebFront angezeigt.
 
 
@@ -35,17 +35,17 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 ### 4. Einrichten der Instanzen in IP-Symcon
 
 - Unter "Instanz hinzufügen" ist das 'Watchdog'-Modul unter dem Hersteller '(Sonstige)' aufgeführt.  
-- Alle zu schaltenden Variablen müssen der Liste "Variablen" in der Instanzkonfiguration hintugefügt werden.
+- Alle zu schaltenden Variablen müssen der Liste "Variablen" in der Instanzkonfiguration hinzugefügt werden.
 
 __Konfigurationsseite__:
 
 Name       | Beschreibung
 ---------- | ---------------------------------
-Variablen  | Eine Liste,der die zu beobachteten Variablen hinzugefügt werden.
+Variablen  | Liste, der die zu beobachteten Variablen hinzugefügt werden.
 Zeit       | Dauer der Inaktivität bis die gelisteten Variablen den Alarm auslösen. 
 Einheit    | Einheit der Zeit.
 
-Sollten Variablen unterschiedlich oft geprüft werden, ist es zu empfehlen meherer Instanzen des Watchdog-Moduls zu verwenden.
+Sollten Variablen unterschiedlich lange erlaubt Inaktivität haben, ist es zu empfehlen mehrerer Instanzen des Watchdog-Moduls zu verwenden.
 
 ### 5. Statusvariablen und Profile
 
