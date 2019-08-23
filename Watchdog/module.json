@@ -10,5 +10,6 @@
     "parentRequirements": [],
     "childRequirements": [],
     "implemented": [],
-    "prefix": "WD"
+    "prefix": "WD",
+    "url": "https://github.com/symcon/Watchdog/tree/master/Watchdog"
 }
