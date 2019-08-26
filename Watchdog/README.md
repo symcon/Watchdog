@@ -41,11 +41,11 @@ __Konfigurationsseite__:
 
 Name       | Beschreibung
 ---------- | ---------------------------------
-Variablen  | Liste, der die zu beobachteten Variablen hinzugefügt werden.
+Variablen  | Dieser Liste werden die zu beobachtenden Variablen hinzugefügt.
 Zeit       | Dauer der Inaktivität bis die gelisteten Variablen den Alarm auslösen. 
 Einheit    | Einheit der Zeit.
 
-Sollten Variablen unterschiedlich lange erlaubt Inaktivität haben, ist es zu empfehlen mehrerer Instanzen des Watchdog-Moduls zu verwenden.
+Sollten Variablen unterschiedlich lange erlaubt Inaktivität haben, ist es zu empfehlen mehrere Instanzen des Watchdog-Moduls zu verwenden.
 
 ### 5. Statusvariablen und Profile
 
