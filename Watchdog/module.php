@@ -125,11 +125,15 @@ class Watchdog extends IPSModule
 		foreach ($targets as $target){
 									
 			$v = IPS_GetVariable($target["VariableID"]);
+			$variableChange = 0;
+			if ($this->ReadPropertyBoolean("CheckChange")) {
+				$variableChange = $v['VariableChanged'];
+			} else {
+				$variableChange = $v['VariableUpdated'];
+			}
 
-			if(($v['VariableChanged'] < $watchTimeBorder) && $this->ReadPropertyBoolean("CheckChange")){
-				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableChanged']);
-			} elseif ($v['VariableUpdated'] < $watchTimeBorder) {
-				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $v['VariableUpdated']);
+			if($variableChange < $watchTimeBorder){
+				$alertTargets[] = array('Name' => $target["Name"], 'VariableID' => $target["VariableID"], 'LastUpdate' => $variableChange);
 			}
 		}
 		return $alertTargets;
