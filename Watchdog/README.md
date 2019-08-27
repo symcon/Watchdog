@@ -57,7 +57,6 @@ Aktive Alarme      | String    | Beinhaltet die Tabelle für die Darstellung im 
 Alarm              | Boolean   | Die Variable zeigt an ob ein Alarm vorhanden ist. True = Alarm; False = OK;
 Letzte Überprüfung | Integer   | UnixTimestamp der den Zeitpunkt angibt zu dem zuletzt überprüft wurde.
 Watchdog aktiv     | Boolean   | Zeigt an ob der Watchdog aktiviert ist oder nicht. True = Aktiviert; False = Deaktiviert;
-CheckTargetsTimer  | Timer     | Automatische Überprüfung im eingestellten Intervall.
 
 Es werden keine zusätzlichen Profile benötigt.
 
