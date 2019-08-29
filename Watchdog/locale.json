@@ -8,7 +8,7 @@
 			"Hours": "Stunden",
 			"Days": "Tage",
 			"Time": "Zeit",
-			"Suppress alarm messages while IP-Symcon is starting": "Alarm-Meldungen während IP-Symcon startet unterdrücken",
+			"Suppress alarm messages while IP-Symcon is starting": "Unterdrücke Alarm-Meldungen während IP-Symcon startet",
 			"Checks for changes instead of updates": "Prüft auf Änderungen anstelle von Updates",
 			"%d Minute": "%d Minute",
 			"%d Minutes": "%d Minuten",
@@ -17,10 +17,14 @@
 			"%d Day": "%d Tag",
 			"%d Days": "%d Tage",
 			"Last change": "Letze Änderung",
-			"Last update": "Letzte Aktualisuerung",
+			"Last update": "Letzte Aktualisierung",
 			"Actor": "Aktor",
 			"Overdue since": "Überfällig seit",
-			"Advanced Settings": "Erweiterte Einstellungen"
+			"Advanced Settings": "Erweiterte Einstellungen",
+			"Just now": "Gerade eben",
+			"Check for": "Prüfen auf",
+			"variable updates": "Variableaktualisierung",
+			"variable changes": "Variablenänderungen"
 		}
 	}
 }
