@@ -49,8 +49,13 @@
 		"type": "ExpansionPanel", 
 		"caption": "Advanced Settings",
 		"items": [
-			{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages while IP-Symcon is starting" },
-			{ "type": "CheckBox", "name": "CheckChange", "caption": "Checks for changes instead of updates" }
+			{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages while IP-Symcon is starting"},
+			{ "type": "Select", "name": "CheckChange", "caption": "Check for", 
+				"options": [
+					{"caption": "variable updates", "value": false},
+					{"caption": "variable changes", "value": true}
+				] 
+			}
 		]
 	}
   ],
