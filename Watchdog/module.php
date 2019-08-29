@@ -69,7 +69,7 @@ class Watchdog extends IPSModule
 			$this->RegisterMessage(0, KR_READY);
 		}
 		else if (GetValue($this->GetIDForIdent("Active"))) {
-			$this->UpdateTimer(false);
+			$this->UpdateTimer(true);
 		}
 		
 	}
@@ -174,7 +174,7 @@ class Watchdog extends IPSModule
 		}
 		
 	}
-
+									
 	public function UpdateTimer($Force) 
 	{
 		if($Force) {
@@ -182,7 +182,7 @@ class Watchdog extends IPSModule
 		}
 
 		//Immediately return if off flag is set or instance is inactive
-		$this->SendDebug("MessageSink", "TimerUpdated", 0);
+		$this->SendDebug("UpdateTimer", "Force: " . $Force, 0);
 		if (($this->GetBuffer("Ready") == "false") || !(GetValue($this->GetIDForIdent("Active")))) {
 			$this->SendDebug("UpdateTimer", "NotReady or NotActive", 0);
 			return;
@@ -192,19 +192,20 @@ class Watchdog extends IPSModule
 		$updated = time();
 		foreach ($targets as $target) {
             if ($this->ReadPropertyBoolean("CheckChange")) {
-                $targetUpdated = IPS_GetVariable($target["VariableID"])["VariableUpdated"];
+                $targetUpdated = IPS_GetVariable($target["VariableID"])["VariableChanged"];
             } else {
-				$targetUpdated = IPS_GetVariable($target["VariableID"])["VariableChanged"];
+				$targetUpdated = IPS_GetVariable($target["VariableID"])["VariableUpdated"];
 			}
 			if ($targetUpdated < $updated) {
-				$this->SendDebug("UpdateTimer", "targetupdated: " . $targetUpdated, 0);
-				$this->SendDebug("UpdateTimer", "updated: " . $updated, 0);
+				$this->SendDebug("UpdateTimer", "Last update (" .IPS_GetName(IPS_GetVariable($target["VariableID"])["VariableID"]). "): " . date("H:i:s", $targetUpdated), 0);
+				$this->SendDebug("UpdateTimer", "Time: " . date("H:i:s", $updated), 0);
 				$updated = $targetUpdated;
 			}
 		} 
 		$updatedInterval = $this->GetWatchTime() - time() + $updated;
         if ($updatedInterval > 0) {
-            $this->SetTimerInterval("CheckTargetsTimer", $updatedInterval * 1000);
+			$this->SetTimerInterval("CheckTargetsTimer", $updatedInterval * 1000);
+			$this->CheckTargets();
         } else {
 			$this->SetTimerInterval("CheckTargetsTimer", 60 * 1000);
 			$this->CheckTargets();
