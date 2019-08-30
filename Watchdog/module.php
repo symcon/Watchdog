@@ -69,7 +69,8 @@ class Watchdog extends IPSModule
 			$this->RegisterMessage(0, KR_READY);
 		}
 		else if (GetValue($this->GetIDForIdent("Active"))) {
-			$this->UpdateTimer(true);
+			$this->UpdateTimer(false);
+			$this->CheckTargets();
 		}
 		
 	}
@@ -90,6 +91,7 @@ class Watchdog extends IPSModule
 		if ($SwitchOn){
 			//When activating the simulation, fetch actual data for a day and activate timer for updating targets
 			$this->UpdateTimer(true);
+			$this->CheckTargets();
 			$this->SendDebug("ModuleActive", "working", 0);
 			$this->SendDebug("ModuleActive", "TimerUpdated", 0);
 		} else {
@@ -205,7 +207,6 @@ class Watchdog extends IPSModule
 		$updatedInterval = $this->GetWatchTime() - time() + $updated;
         if ($updatedInterval > 0) {
 			$this->SetTimerInterval("CheckTargetsTimer", $updatedInterval * 1000);
-			$this->CheckTargets();
         } else {
 			$this->SetTimerInterval("CheckTargetsTimer", 60 * 1000);
 			$this->CheckTargets();
