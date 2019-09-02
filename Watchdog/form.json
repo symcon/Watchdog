@@ -52,8 +52,8 @@
 			{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages while IP-Symcon is starting"},
 			{ "type": "Select", "name": "CheckChange", "caption": "Check for", 
 				"options": [
-					{"caption": "variable updates", "value": false},
-					{"caption": "variable changes", "value": true}
+					{"caption": "Variable Updates", "value": false},
+					{"caption": "Variable Changes", "value": true}
 				] 
 			}
 		]

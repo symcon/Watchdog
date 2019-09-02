@@ -19,10 +19,10 @@ class Watchdog extends IPSModule
         $this->RegisterTimer('CheckTargetsTimer', 0, 'WD_UpdateTimer($_IPS[\'TARGET\'], true);');
 
         //Variables
-        $this->RegisterVariableInteger('LastCheck', 'Letzte Überprüfung', '~UnixTimestamp');
-        $this->RegisterVariableString('AlertView', 'Aktive Alarme', '~HTMLBox');
-        $this->RegisterVariableBoolean('Alert', 'Alarm', '~Alert');
-        $this->RegisterVariableBoolean('Active', 'Watchdog aktiv', '~Switch');
+        $this->RegisterVariableInteger('LastCheck', $this->Translate('Last Check'), '~UnixTimestamp');
+        $this->RegisterVariableString('AlertView', $this->Translate('Active Alerts'), '~HTMLBox');
+        $this->RegisterVariableBoolean('Alert', $this->Translate('Alert'), '~Alert');
+        $this->RegisterVariableBoolean('Active', $this->Translate('Watchdog Active'), '~Switch');
         $this->EnableAction('Active');
 
         //Attribute
@@ -97,7 +97,7 @@ class Watchdog extends IPSModule
         } else {
             //When deactivating the simulation, kill data for simulation and deactivate timer for updating targets
             $this->SetTimerInterval('CheckTargetsTimer', 0);
-            SetValue($this->GetIDForIdent('AlertView'), 'Watchdog deaktiviert');
+            SetValue($this->GetIDForIdent('AlertView'), $this->Translate('Watchdog disabled'));
         }
 
         SetValue($this->GetIDForIdent('Active'), $SwitchOn);

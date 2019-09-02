@@ -23,8 +23,13 @@
 			"Advanced Settings": "Erweiterte Einstellungen",
 			"Just now": "Gerade eben",
 			"Check for": "Prüfen auf",
-			"variable updates": "Variableaktualisierung",
-			"variable changes": "Variablenänderungen"
+			"Variable Updates": "Variableaktualisierung",
+			"Variable Changes": "Variablenänderungen",
+			"Watchdog disabled": "Watchdog deaktiviert",
+			"Last Check": "Letzte Überprüfung",
+			"Active Alerts": "Aktive Alarme",
+			"Alert": "Alarm",
+			"Watchdog active": "Watchdog aktiv"
 		}
 	}
 }
