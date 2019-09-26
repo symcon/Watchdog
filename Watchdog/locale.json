@@ -25,11 +25,13 @@
 			"Check for": "Prüfen auf",
 			"Variable Updates": "Variableaktualisierung",
 			"Variable Changes": "Variablenänderungen",
+			"Variables": "Variablen",
 			"Watchdog disabled": "Watchdog deaktiviert",
 			"Last Check": "Letzte Überprüfung",
 			"Active Alerts": "Aktive Alarme",
 			"Alert": "Alarm",
-			"Watchdog active": "Watchdog aktiv"
+			"Watchdog Active": "Watchdog Aktiv",
+			"Name (optional)": "Name (optional)"
 		}
 	}
 }
