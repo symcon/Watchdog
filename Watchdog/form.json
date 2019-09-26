@@ -1,17 +1,67 @@
 {
   "elements":
   [
-	{ "type": "Label", "label": "Time until not updatet objects will set off an alert. Its added to the last time an object is updatet." },
-	{ "type": "Select", "name": "TimeBase", "caption": "Time base",
-		"options": [
-			{ "label": "Seconds", "value": 0 },
-			{ "label": "Minutes", "value": 1 },
-			{ "label": "Hours", "value": 2 },
-			{ "label": "Days", "value": 3 }
+	{
+		"type": "List",
+		"name": "Targets",
+		"caption": "Variables",
+		"add": true,
+		"delete": true,
+		"columns": [
+		  {
+			"caption": "Variable",
+			"name": "VariableID",
+			"width": "auto",
+			"add": 0,
+			"edit": {
+			  "type": "SelectVariable"
+			}
+		  },
+		  {
+			"caption": "Name (optional)",
+			"name": "Name",
+			"width": "200px",
+			"add": "",
+			"value": "",
+			"edit": {
+			  "type": "ValidationTextBox"
+			}
+		  }
+		]
+	  },
+	{ "type": "Label", "label": "Time until a variable is considered inactive." },
+	{
+		"type": "RowLayout", 
+		"items": [
+			{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time" },
+			{ "type": "Select", "name": "TimeBase", "caption": "Unit",
+				"options": [
+					{ "label": "Seconds", "value": 0 },
+					{ "label": "Minutes", "value": 1 },
+					{ "label": "Hours", "value": 2 },
+					{ "label": "Days", "value": 3 }
+				]
+	}
+
 		]
 	},
-	{ "type": "NumberSpinner", "name": "TimeValue", "caption": "Time value" },
-	{ "type": "Label", "label": "Interval which checks the linked objects" },
-	{ "type": "IntervalBox", "name": "CheckTargetsInterval", "caption": "Seconds" }
+	{
+		"type": "ExpansionPanel", 
+		"caption": "Advanced Settings",
+		"items": [
+			{ "type": "CheckBox", "name": "BlockAlarm", "caption": "Suppress alarm messages while IP-Symcon is starting"},
+			{ "type": "Select", "name": "CheckChange", "caption": "Check for", 
+				"options": [
+					{"caption": "Variable Updates", "value": false},
+					{"caption": "Variable Changes", "value": true}
+				] 
+			}
+		]
+	}
+  ],
+  "actions": [
+	  {
+		  "type": "TestCenter"
+	  }
   ]
 }

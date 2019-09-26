@@ -1,187 +1,297 @@
-<?
+<?php
+
+declare(strict_types=1);
 class Watchdog extends IPSModule
 {
+    public function Create()
+    {
+        //Never delete this line!
+        parent::Create();
 
-	public function Create() {
-		//Never delete this line!
-		parent::Create();
-		
-		//Properties
-		$this->RegisterPropertyInteger("TimeBase", 0);
-		$this->RegisterPropertyInteger("TimeValue", 60);
-		$this->RegisterPropertyInteger("CheckTargetsInterval", 60);
-		
-		//Timer
-		$this->RegisterTimer("CheckTargetsTimer", 0, 'WD_CheckTargets($_IPS[\'TARGET\']);');
-		
-		//Variables
-		$this->RegisterVariableInteger("LastCheck", "Letzte Überprüfung", "~UnixTimestamp");
-		$this->RegisterVariableString("AlertView", "Aktive Alarme", "~HTMLBox");
-		$this->RegisterVariableBoolean("Alert", "Alarm", "~Alert");
-		$this->RegisterVariableBoolean("Active", "Watchdog aktiv", "~Switch");
-		$this->EnableAction("Active");
-		
-		$this->CreateCategoryByIdent($this->InstanceID, "Targets", "Targets (Watchdog)");
-		
-	}
+        //Properties
+        $this->RegisterPropertyInteger('TimeBase', 0);
+        $this->RegisterPropertyInteger('TimeValue', 60);
+        $this->RegisterPropertyString('Targets', '[]');
+        $this->RegisterPropertyBoolean('BlockAlarm', false);
+        $this->RegisterPropertyBoolean('CheckChange', false);
 
-	public function Destroy() {
-		//Never delete this line!
-		parent::Destroy();
-		
-	}
+        //Timer
+        $this->RegisterTimer('CheckTargetsTimer', 0, 'WD_UpdateTimer($_IPS[\'TARGET\'], true);');
 
-	public function ApplyChanges() {
-		//Never delete this line!
-		parent::ApplyChanges();
-		
-		if (GetValue($this->GetIDForIdent("Active"))) {
-			$this->SetTimerInterval("CheckTargetsTimer", $this->ReadPropertyInteger("CheckTargetsInterval") * 1000);
-		}
-	}
+        //Variables
+        $this->RegisterVariableInteger('LastCheck', $this->Translate('Last Check'), '~UnixTimestamp');
+        $this->RegisterVariableString('AlertView', $this->Translate('Active Alerts'), '~HTMLBox');
+        $this->RegisterVariableBoolean('Alert', $this->Translate('Alert'), '~Alert');
+        $this->RegisterVariableBoolean('Active', $this->Translate('Watchdog Active'), '~Switch');
+        $this->EnableAction('Active');
 
-	public function RequestAction($Ident, $Value) {
-		
-		switch($Ident) {
-			case "Active":
-				$this->SetActive($Value);
-				break;
-			default:
-				throw new Exception("Invalid ident");
-		}
-		
-	}
+        //Attribute
+        $this->RegisterAttributeInteger('TimerInterval', 10);
+    }
 
-	public function SetActive(bool $SwitchOn){
-		
-		if ($SwitchOn){
-			//When activating the simulation, fetch actual data for a day and activate timer for updating targets
-			$this->CheckTargets();
-			$this->SetTimerInterval("CheckTargetsTimer", $this->ReadPropertyInteger("CheckTargetsInterval") * 1000);
-		} else {
-			//When deactivating the simulation, kill data for simulation and deactivate timer for updating targets
-			$this->SetTimerInterval("CheckTargetsTimer", 0);
-			SetValue($this->GetIDForIdent("AlertView"), "Watchdog deaktiviert");
-		}
-		
-		SetValue($this->GetIDForIdent("Active"), $SwitchOn);
-		
-	}
+    public function Destroy()
+    {
+        //Never delete this line!
+        parent::Destroy();
+    }
 
-	public function CheckTargets() {
-		
-		$alertTargets = $this->GetAlertTargets();
-		SetValue($this->GetIDForIdent("Alert"), sizeof($alertTargets) > 0);
-		
-		SetValue($this->GetIDForIdent("LastCheck"), time());
-		
-		$this->UpdateView($alertTargets);
-		
-	}
+    public function ApplyChanges()
+    {
+        //Never delete this line!
+        parent::ApplyChanges();
 
-	public function GetAlertTargets() {
-		
-		$targetIDs = $this->GetTargets();
-		
-		$watchTime = $this->GetWatchTime();
-		$watchTimeBorder = time() - $watchTime;
-		
-		$alertTargets = array();
-		
-		foreach ($targetIDs as $targetID){
-			
-			//resolve link to linked targetID
-			$linkedTargetID = IPS_GetLink($targetID)['TargetID'];
-			
-			$v = IPS_GetVariable($linkedTargetID);
-			
-			if($v['VariableUpdated'] < $watchTimeBorder){
-				$alertTargets[] = array('LinkID' => $targetID, 'VariableID' => $linkedTargetID, 'LastUpdate' => $v['VariableUpdated']);
-			}
-		}
-		return $alertTargets;
-		
-	}
+        //Links to list
+        if ($this->ReadPropertyString('Targets') == '[]') {
+            $TargetID = @$this->GetIDForIdent('Targets');
 
-	//Returns all "real" variableID's as array, which are linked in the "Targets" category
-	private function GetTargets() {
-		
-		$targetIDs = IPS_GetChildrenIDs(IPS_GetObjectIDByIdent("Targets", $this->InstanceID));
-		
-		$result = array();
-		foreach($targetIDs as $targetID) {
-			//Only allow links
-			if (IPS_LinkExists($targetID)) {
-				if (IPS_VariableExists(IPS_GetLink($targetID)['TargetID'])) {
-					$result[] = $targetID;
-				}
-			}
-		}
-		return $result;
-	}
+            if ($TargetID) {
+                $Variables = [];
+                foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
+                    $targetID = IPS_GetLink($ChildrenID)['TargetID'];
+                    $line = [
+                        'VariableID' => $targetID
+                    ];
+                    array_push($Variables, $line);
+                    IPS_DeleteLink($ChildrenID);
+                }
 
-	private function GetWatchTime() {
-		
-		$timeBase = $this->ReadPropertyInteger("TimeBase");
-		$timeValue = $this->ReadPropertyInteger("TimeValue");
-		
-		switch($timeBase) {
-			case 0:
-				return $timeValue;
-				
-			case 1:
-				return $timeValue * 60;
-				
-			case 2:
-				return $timeValue * 3600;
-				
-			case 3:
-				return $timeValue * 86400;
-		}
-		
-	}
+                IPS_DeleteCategory($TargetID);
+                IPS_SetProperty($this->InstanceID, 'Targets', json_encode($Variables));
+                IPS_ApplyChanges($this->InstanceID);
+                return;
+            }
+        }
 
-	private function UpdateView($AlertTargets) {
-		
-		$html = "<table style='width: 100%; border-collapse: collapse;'>";
-		$html .= "<tr>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Aktor</td>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Letzte Aktualisierung</td>";
-		$html .= "<td style='padding: 5px; font-weight: bold;'>Überfällig seit</td>";
-		$html .= "</tr>";
-		
-		foreach ($AlertTargets as $alertTarget) {
-			
-			$name = IPS_GetName($alertTarget['LinkID']);
-			if(IPS_GetName($alertTarget['VariableID']) == $name) {
-				$name = IPS_GetName(IPS_GetParent($alertTarget['VariableID']))."\\".IPS_GetName($alertTarget['VariableID']);
-			}
-			
-			$timediff = time() - $alertTarget['LastUpdate'];
-			$timestring = sprintf("%02d:%02d:%02d", (int)($timediff / 3600) , (int)($timediff / 60) % 60, ($timediff) % 60);
-			
-			$html .= "<tr style='border-top: 1px solid rgba(255,255,255,0.10);'>";
-			$html .= "<td style='padding: 5px;'>".$name."</td>";
-			$html .= "<td style='padding: 5px;'>".date("d.m.Y H:i:s", $alertTarget['LastUpdate'])."</td>";
-			$html .= "<td style='padding: 5px;'>".$timestring." Stunden</td>";
-			$html .= "</tr>";
-		}
-		$html .= "</table>";
-		
-		SetValue($this->GetIDForIdent("AlertView"), $html);
-		
-	}
+        foreach (json_decode($this->ReadPropertyString('Targets'), true) as $target) {
+            $this->RegisterMessage($target['VariableID'], VM_UPDATE);
+        }
+        //Additional condition: "No alarm on start" must be active
+        if ((IPS_GetKernelRunlevel() == KR_CREATE) && $this->ReadPropertyBoolean('BlockAlarm')) {
+            $this->SetBuffer('Ready', 'false');
+            $this->RegisterMessage(0, KR_READY);
+        } elseif (GetValue($this->GetIDForIdent('Active'))) {
+            $this->UpdateTimer(false);
+            $this->CheckTargets();
+        }
+    }
 
-	private function CreateCategoryByIdent($id, $ident, $name) {
-		$cid = @IPS_GetObjectIDByIdent($ident, $id);
-		if($cid === false) {
-			$cid = IPS_CreateCategory();
-			IPS_SetParent($cid, $id);
-			IPS_SetName($cid, $name);
-			IPS_SetIdent($cid, $ident);
-		}
-		return $cid;
-	}
+    public function RequestAction($Ident, $Value)
+    {
+        switch ($Ident) {
+            case 'Active':
+                $this->SetActive($Value);
+                break;
+            default:
+                throw new Exception('Invalid ident');
+        }
+    }
 
+    public function SetActive(bool $SwitchOn)
+    {
+        if ($SwitchOn) {
+            //When activating the simulation, fetch actual data for a day and activate timer for updating targets
+            $this->UpdateTimer(true);
+            $this->CheckTargets();
+            $this->SendDebug('ModuleActive', 'working', 0);
+            $this->SendDebug('ModuleActive', 'TimerUpdated', 0);
+        } else {
+            //When deactivating the simulation, kill data for simulation and deactivate timer for updating targets
+            $this->SetTimerInterval('CheckTargetsTimer', 0);
+            SetValue($this->GetIDForIdent('AlertView'), $this->Translate('Watchdog disabled'));
+        }
+
+        SetValue($this->GetIDForIdent('Active'), $SwitchOn);
+    }
+
+    private function CheckTargets()
+    {
+        $this->SetBuffer('Ready', 'true');
+        $alertTargets = $this->GetAlertTargets();
+        SetValue($this->GetIDForIdent('Alert'), count($alertTargets) > 0);
+
+        SetValue($this->GetIDForIdent('LastCheck'), time());
+
+        $this->UpdateView($alertTargets);
+        $this->SendDebug('CheckTargets', 'TargetChecked', 0);
+    }
+
+    public function GetAlertTargets()
+    {
+        $targets = $this->GetTargets();
+
+        $watchTime = $this->GetWatchTime();
+        $watchTimeBorder = time() - $watchTime;
+        $alertTargets = [];
+
+        foreach ($targets as $target) {
+            $v = IPS_GetVariable($target['VariableID']);
+            $variableChange = 0;
+            if ($this->ReadPropertyBoolean('CheckChange')) {
+                $variableChange = $v['VariableChanged'];
+            } else {
+                $variableChange = $v['VariableUpdated'];
+            }
+
+            if ($variableChange < $watchTimeBorder) {
+                $alertTargets[] = ['Name' => $target['Name'], 'VariableID' => $target['VariableID'], 'LastUpdate' => $variableChange];
+            }
+        }
+        return $alertTargets;
+    }
+
+    //Returns all variableID's and optional names of targets as array, which are listed in "Targets"
+    private function GetTargets()
+    {
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+
+        $result = [];
+        foreach ($targets as $target) {
+            if (IPS_VariableExists($target['VariableID'])) {
+                $result[] = $target;
+            }
+        }
+        return $result;
+    }
+
+    private function GetWatchTime()
+    {
+        $timeBase = $this->ReadPropertyInteger('TimeBase');
+        $timeValue = $this->ReadPropertyInteger('TimeValue');
+
+        switch ($timeBase) {
+            case 0:
+                return $timeValue;
+
+            case 1:
+                return $timeValue * 60;
+
+            case 2:
+                return $timeValue * 3600;
+
+            case 3:
+                return $timeValue * 86400;
+        }
+    }
+
+    public function UpdateTimer($Force)
+    {
+        if ($Force) {
+            $this->SetBuffer('Ready', 'true');
+        }
+
+        //Immediately return if off flag is set or instance is inactive
+        $this->SendDebug('UpdateTimer', 'Force: ' . $Force, 0);
+        if (($this->GetBuffer('Ready') == 'false') || !(GetValue($this->GetIDForIdent('Active')))) {
+            $this->SendDebug('UpdateTimer', 'NotReady or NotActive', 0);
+            return;
+        }
+        SetValue($this->GetIDForIdent('LastCheck'), time());
+        $targets = $this->GetTargets();
+        $updated = time();
+        foreach ($targets as $target) {
+            if ($this->ReadPropertyBoolean('CheckChange')) {
+                $targetUpdated = IPS_GetVariable($target['VariableID'])['VariableChanged'];
+            } else {
+                $targetUpdated = IPS_GetVariable($target['VariableID'])['VariableUpdated'];
+            }
+            if ($targetUpdated < $updated) {
+                $this->SendDebug('UpdateTimer', 'Last update (' . IPS_GetName(IPS_GetVariable($target['VariableID'])['VariableID']) . '): ' . date('H:i:s', $targetUpdated), 0);
+                $this->SendDebug('UpdateTimer', 'Time: ' . date('H:i:s', $updated), 0);
+                $updated = $targetUpdated;
+            }
+        }
+        $updatedInterval = $this->GetWatchTime() - time() + $updated;
+        if ($updatedInterval > 0) {
+            $this->SetTimerInterval('CheckTargetsTimer', $updatedInterval * 1000);
+        } else {
+            $this->SetTimerInterval('CheckTargetsTimer', 60 * 1000);
+            $this->CheckTargets();
+        }
+    }
+
+    public function MessageSink($TimeStamp, $SenderID, $MessageID, $Data)
+    {
+        switch ($MessageID) {
+            case VM_UPDATE:
+                //If in alarm state not only timer update
+                if (GetValue($this->GetIDForIdent('Alert'))) {
+                    $this->CheckTargets();
+                    $this->UpdateTimer(false);
+                } else {
+                    $this->UpdateTimer(false);
+                }
+                break;
+
+            case KR_READY:
+                $this->SetTimerInterval('CheckTargetsInterval', $this->GetWatchTime());
+                break;
+        }
+    }
+
+    private function FormatTime($Value)
+    {
+        $template = '';
+        $number = 0;
+        if ($Value < 60) {
+            return $this->Translate('Just now');
+        } elseif (($Value > 60) && ($Value < (60 * 60))) {
+            $template = '%d Minute';
+            $number = floor($Value / 60);
+            if ($Value >= (2 * 60)) {
+                $template .= 's';
+            }
+        } elseif (($Value > (60 * 60)) && ($Value < (24 * 60 * 60))) {
+            $template = '%d Hour';
+            $number = floor($Value / (60 * 60));
+            if ($Value >= (2 * 60 * 60)) {
+                $template .= 's';
+            }
+        } elseif ($Value > (24 * 60 * 60)) {
+            $template = '%d Day';
+            $number = floor($Value / (24 * 60 * 60));
+            if ($Value >= (2 * 24 * 60 * 60)) {
+                $template .= 's';
+            }
+        }
+
+        return sprintf($this->Translate($template), $number);
+    }
+
+    private function UpdateView($AlertTargets)
+    {
+        $last = '';
+
+        if ($this->ReadPropertyBoolean('CheckChange')) {
+            $last = $this->Translate('Last change');
+        } else {
+            $last = $this->Translate('Last update');
+        }
+
+        $html = "<table style='width: 100%; border-collapse: collapse;'>";
+        $html .= '<tr>';
+        $html .= "<td style='padding: 5px; font-weight: bold;'>" . $this->Translate('Actor') . '</td>';
+        $html .= "<td style='padding: 5px; font-weight: bold;'>" . $last . '</td>';
+        $html .= "<td style='padding: 5px; font-weight: bold;'>" . $this->Translate('Overdue since') . '</td>';
+        $html .= '</tr>';
+
+        foreach ($AlertTargets as $alertTarget) {
+            if ($alertTarget['Name'] == '') {
+                $name = IPS_GetLocation($alertTarget['VariableID']);
+            } else {
+                $name = $alertTarget['Name'];
+            }
+
+            $timediff = time() - $alertTarget['LastUpdate'];
+            $timestring = $this->FormatTime($timediff);
+
+            $html .= "<tr style='border-top: 1px solid rgba(255,255,255,0.10);'>";
+            $html .= "<td style='padding: 5px;'>" . $name . '</td>';
+            $html .= "<td style='padding: 5px;'>" . date('d.m.Y H:i:s', $alertTarget['LastUpdate']) . '</td>';
+            $html .= "<td style='padding: 5px;'>" . $timestring . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</table>';
+
+        SetValue($this->GetIDForIdent('AlertView'), $html);
+    }
 }
-?>
