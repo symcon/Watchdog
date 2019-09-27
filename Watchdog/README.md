@@ -3,7 +3,7 @@
 Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im WebFront angezeigt.
 
 
-### Inhaltverzeichnis
+### Inhaltsverzeichnis
 
 1. [Funktionsumfang](#1-funktionsumfang)
 2. [Voraussetzungen](#2-voraussetzungen)
@@ -28,13 +28,13 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 
 ### 3. Software-Installation
 
-* Über den Modul Store das Modul Watchdog installieren.
-* Alternativ über das Modul Control folgende URL hinzufügen:
+* Über den Module Store das Modul Watchdog installieren.
+* Alternativ über das Module Control folgende URL hinzufügen:
 `https://github.com/symcon/Watchdog`
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
-- Unter "Instanz hinzufügen" ist das 'Watchdog'-Modul unter dem Hersteller '(Sonstige)' aufgeführt.  
+- Unter "Instanz hinzufügen" ist das 'Watchdog'-Modul unter dem Hersteller '(Gerät)' aufgeführt.  
 - Alle zu schaltenden Variablen müssen der Liste "Variablen" in der Instanzkonfiguration hinzugefügt werden.
 
 __Konfigurationsseite__:
