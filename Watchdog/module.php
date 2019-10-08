@@ -73,6 +73,15 @@ class Watchdog extends IPSModule
             $this->UpdateTimer(false);
             $this->CheckTargets();
         }
+
+        //Add references
+        foreach ($this->GetReferenceList() as $referenceID) {
+            $this->UnregisterReference($referenceID);
+        }
+        $targets = json_decode($this->ReadPropertyString('Targets'));
+        foreach ($targets as $target) {
+            $this->RegisterReference($target->VariableID);
+        }
     }
 
     public function RequestAction($Ident, $Value)
