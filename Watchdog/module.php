@@ -49,7 +49,8 @@ class Watchdog extends IPSModule
                 foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
                     $targetID = IPS_GetLink($ChildrenID)['TargetID'];
                     $line = [
-                        'VariableID' => $targetID
+                        'VariableID' => $targetID,
+                        'Name'       => IPS_GetName($ChildrenID)
                     ];
                     array_push($Variables, $line);
                     IPS_DeleteLink($ChildrenID);
@@ -142,7 +143,8 @@ class Watchdog extends IPSModule
             }
 
             if ($variableChange < $watchTimeBorder) {
-                $alertTargets[] = ['Name' => $target['Name'], 'VariableID' => $target['VariableID'], 'LastUpdate' => $variableChange];
+                //The isset check is required for legacy purposes. Initially we made an error while importing and forgot to import 'Name's which left the field uninitialized.
+                $alertTargets[] = ['Name' => isset($target['Name']) ? $target['Name'] : '', 'VariableID' => $target['VariableID'], 'LastUpdate' => $variableChange];
             }
         }
         return $alertTargets;
