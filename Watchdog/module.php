@@ -42,22 +42,22 @@ class Watchdog extends IPSModule
 
         //Links to list
         if ($this->ReadPropertyString('Targets') == '[]') {
-            $TargetID = @$this->GetIDForIdent('Targets');
+            $targetID = @$this->GetIDForIdent('Targets');
 
-            if ($TargetID) {
-                $Variables = [];
-                foreach (IPS_GetChildrenIDs($TargetID) as $ChildrenID) {
-                    $targetID = IPS_GetLink($ChildrenID)['TargetID'];
+            if ($targetID) {
+                $variables = [];
+                foreach (IPS_GetChildrenIDs($targetID) as $childID) {
+                    $targetID = IPS_GetLink($childID)['TargetID'];
                     $line = [
                         'VariableID' => $targetID,
-                        'Name'       => IPS_GetName($ChildrenID)
+                        'Name'       => IPS_GetName($childID)
                     ];
-                    array_push($Variables, $line);
-                    IPS_DeleteLink($ChildrenID);
+                    array_push($variables, $line);
+                    IPS_DeleteLink($childID);
                 }
 
-                IPS_DeleteCategory($TargetID);
-                IPS_SetProperty($this->InstanceID, 'Targets', json_encode($Variables));
+                IPS_DeleteCategory($targetID);
+                IPS_SetProperty($this->InstanceID, 'Targets', json_encode($variables));
                 IPS_ApplyChanges($this->InstanceID);
                 return;
             }
@@ -239,28 +239,28 @@ class Watchdog extends IPSModule
         }
     }
 
-    private function FormatTime($Value)
+    private function FormatTime($value)
     {
         $template = '';
         $number = 0;
-        if ($Value < 60) {
+        if ($value < 60) {
             return $this->Translate('Just now');
-        } elseif (($Value > 60) && ($Value < (60 * 60))) {
+        } elseif (($value > 60) && ($value < (60 * 60))) {
             $template = '%d Minute';
-            $number = floor($Value / 60);
-            if ($Value >= (2 * 60)) {
+            $number = floor($value / 60);
+            if ($value >= (2 * 60)) {
                 $template .= 's';
             }
-        } elseif (($Value > (60 * 60)) && ($Value < (24 * 60 * 60))) {
+        } elseif (($value > (60 * 60)) && ($value < (24 * 60 * 60))) {
             $template = '%d Hour';
-            $number = floor($Value / (60 * 60));
-            if ($Value >= (2 * 60 * 60)) {
+            $number = floor($value / (60 * 60));
+            if ($value >= (2 * 60 * 60)) {
                 $template .= 's';
             }
-        } elseif ($Value > (24 * 60 * 60)) {
+        } elseif ($value > (24 * 60 * 60)) {
             $template = '%d Day';
-            $number = floor($Value / (24 * 60 * 60));
-            if ($Value >= (2 * 24 * 60 * 60)) {
+            $number = floor($value / (24 * 60 * 60));
+            if ($value >= (2 * 24 * 60 * 60)) {
                 $template .= 's';
             }
         }
@@ -268,7 +268,7 @@ class Watchdog extends IPSModule
         return sprintf($this->Translate($template), $number);
     }
 
-    private function UpdateView($AlertTargets)
+    private function UpdateView($alertTargets)
     {
         $last = '';
 
@@ -285,7 +285,7 @@ class Watchdog extends IPSModule
         $html .= "<td style='padding: 5px; font-weight: bold;'>" . $this->Translate('Overdue since') . '</td>';
         $html .= '</tr>';
 
-        foreach ($AlertTargets as $alertTarget) {
+        foreach ($alertTargets as $alertTarget) {
             if ($alertTarget['Name'] == '') {
                 $name = IPS_GetLocation($alertTarget['VariableID']);
             } else {
