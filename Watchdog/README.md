@@ -34,7 +34,7 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
-- Unter "Instanz hinzufügen" ist das 'Watchdog'-Modul unter dem Hersteller '(Gerät)' aufgeführt.  
+- Unter "Instanz hinzufügen" kann das 'Watchdog'-Modul mithilfe der Schnellsuche gefunden werden.  
 - Alle zu schaltenden Variablen müssen der Liste "Variablen" in der Instanzkonfiguration hinzugefügt werden.
 
 __Konfigurationsseite__:
