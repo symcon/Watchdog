@@ -24,7 +24,7 @@ Sind Variablen überfällig, wird ein Alarm gesetzt und eine Liste dieser im Web
 
 ### 2. Voraussetzungen
 
-- IP-Symcon ab Version 5.0
+- IP-Symcon ab Version 5.1
 
 ### 3. Software-Installation
 
