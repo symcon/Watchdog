@@ -63,6 +63,13 @@ class Watchdog extends IPSModule
             }
         }
 
+        //Delete all registrations in order to readd them
+        foreach ($this->GetMessageList() as $senderID => $messages) {
+            foreach ($messages as $message) {
+                $this->UnregisterMessage($senderID, $message);
+            }
+        }
+
         foreach (json_decode($this->ReadPropertyString('Targets'), true) as $target) {
             $this->RegisterMessage($target['VariableID'], VM_UPDATE);
         }
