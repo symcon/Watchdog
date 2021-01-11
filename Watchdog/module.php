@@ -191,7 +191,7 @@ class Watchdog extends IPSModule
         }
     }
 
-    public function UpdateTimer($Force)
+    public function UpdateTimer(bool $Force)
     {
         if ($Force) {
             $this->SetBuffer('Ready', 'true');
