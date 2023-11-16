@@ -120,18 +120,6 @@ class Watchdog extends IPSModule
         SetValue($this->GetIDForIdent('Active'), $SwitchOn);
     }
 
-    private function CheckTargets()
-    {
-        $this->SetBuffer('Ready', 'true');
-        $alertTargets = $this->GetAlertTargets();
-        SetValue($this->GetIDForIdent('Alert'), count($alertTargets) > 0);
-
-        SetValue($this->GetIDForIdent('LastCheck'), time());
-
-        $this->UpdateView($alertTargets);
-        $this->SendDebug('CheckTargets', 'TargetChecked', 0);
-    }
-
     public function GetAlertTargets()
     {
         $targets = $this->GetTargets();
@@ -155,40 +143,6 @@ class Watchdog extends IPSModule
             }
         }
         return $alertTargets;
-    }
-
-    //Returns all variableID's and optional names of targets as array, which are listed in "Targets"
-    private function GetTargets()
-    {
-        $targets = json_decode($this->ReadPropertyString('Targets'), true);
-
-        $result = [];
-        foreach ($targets as $target) {
-            if (IPS_VariableExists($target['VariableID'])) {
-                $result[] = $target;
-            }
-        }
-        return $result;
-    }
-
-    private function GetWatchTime()
-    {
-        $timeBase = $this->ReadPropertyInteger('TimeBase');
-        $timeValue = $this->ReadPropertyInteger('TimeValue');
-
-        switch ($timeBase) {
-            case 0:
-                return $timeValue;
-
-            case 1:
-                return $timeValue * 60;
-
-            case 2:
-                return $timeValue * 3600;
-
-            case 3:
-                return $timeValue * 86400;
-        }
     }
 
     public function UpdateTimer(bool $Force)
@@ -243,6 +197,52 @@ class Watchdog extends IPSModule
             case KR_READY:
                 $this->SetTimerInterval('CheckTargetsInterval', $this->GetWatchTime());
                 break;
+        }
+    }
+
+    private function CheckTargets()
+    {
+        $this->SetBuffer('Ready', 'true');
+        $alertTargets = $this->GetAlertTargets();
+        SetValue($this->GetIDForIdent('Alert'), count($alertTargets) > 0);
+
+        SetValue($this->GetIDForIdent('LastCheck'), time());
+
+        $this->UpdateView($alertTargets);
+        $this->SendDebug('CheckTargets', 'TargetChecked', 0);
+    }
+
+    //Returns all variableID's and optional names of targets as array, which are listed in "Targets"
+    private function GetTargets()
+    {
+        $targets = json_decode($this->ReadPropertyString('Targets'), true);
+
+        $result = [];
+        foreach ($targets as $target) {
+            if (IPS_VariableExists($target['VariableID'])) {
+                $result[] = $target;
+            }
+        }
+        return $result;
+    }
+
+    private function GetWatchTime()
+    {
+        $timeBase = $this->ReadPropertyInteger('TimeBase');
+        $timeValue = $this->ReadPropertyInteger('TimeValue');
+
+        switch ($timeBase) {
+            case 0:
+                return $timeValue;
+
+            case 1:
+                return $timeValue * 60;
+
+            case 2:
+                return $timeValue * 3600;
+
+            case 3:
+                return $timeValue * 86400;
         }
     }
 
