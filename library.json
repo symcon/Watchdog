@@ -1,12 +1,12 @@
 {
-	"id": "{A861E3C0-C298-4966-850A-477EDE7F2F75}",
-	"author": "Symcon GmbH",
-	"name": "Watchdog",
-	"url": "https://www.symcon.de/",
-	"compatibility": {
-		"version": "5.1"
-	},
-	"version": "1.2",
-	"build": 0,
-	"date": 0
+    "id": "{A861E3C0-C298-4966-850A-477EDE7F2F75}",
+    "author": "Symcon GmbH",
+    "name": "Watchdog",
+    "url": "https://www.symcon.de/",
+    "compatibility": {
+        "version": "5.1"
+    },
+    "version": "1.2",
+    "build": 0,
+    "date": 0
 }

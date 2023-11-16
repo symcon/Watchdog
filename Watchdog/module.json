@@ -3,8 +3,7 @@
     "name": "Watchdog",
     "type": 3,
     "vendor": "",
-    "aliases": 
-    [
+    "aliases": [
         "Watchdog"
     ],
     "parentRequirements": [],
