@@ -31,7 +31,8 @@
             "Active Alerts": "Aktive Alarme",
             "Alert": "Alarm",
             "Watchdog Active": "Watchdog Aktiv",
-            "Name (optional)": "Name (optional)"
+            "Name (optional)": "Name (optional)",
+            "https://www.symcon.de/en/service/documentation/module-reference/watchdog/": "https://www.symcon.de/de/service/dokumentation/modulreferenz/watchdog/"
         }
     }
 }
