@@ -219,7 +219,7 @@ class Watchdog extends IPSModule
 
         $result = [];
         foreach ($targets as $target) {
-            $active = array_key_exists('Active', $target) && $target['Active'] || !array_key_exists('Active', $target);
+            $active = (array_key_exists('Active', $target) && $target['Active']) || !array_key_exists('Active', $target);
             if (IPS_VariableExists($target['VariableID']) && $active) {
                 $result[] = $target;
             }
