@@ -63,7 +63,7 @@ class Watchdog extends IPSModule
             }
         }
 
-        //Delete all registrations in order to readd them
+        //Delete all registrations in order to read them
         foreach ($this->GetMessageList() as $senderID => $messages) {
             foreach ($messages as $message) {
                 $this->UnregisterMessage($senderID, $message);
@@ -219,7 +219,8 @@ class Watchdog extends IPSModule
 
         $result = [];
         foreach ($targets as $target) {
-            if (IPS_VariableExists($target['VariableID'])) {
+            $active = array_key_exists("Active", $target) && $target["Active"] || !array_key_exists("Active", $target);
+            if (IPS_VariableExists($target['VariableID']) && $active) {
                 $result[] = $target;
             }
         }
