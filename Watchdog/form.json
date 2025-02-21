@@ -25,6 +25,16 @@
                     "edit": {
                         "type": "ValidationTextBox"
                     }
+                },
+                {
+                    "caption": "Active",
+                    "name": "Active",
+                    "width": "50px",
+                    "add": true,
+                    "edit": {
+                        "type": "CheckBox",
+                        "value": true
+                    }
                 }
             ]
         },
